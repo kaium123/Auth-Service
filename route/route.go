@@ -1,19 +1,4 @@
-// Application
-//
-// Application description
-//
-//	Schemes: http
-//	Host: localhost:8080
-//	BasePath: /api
-//	Version: 0.0.1
-//
-//	Consumes:
-//	- application/json
-//
-//	Produces:
-//	- application/json
-//
-// swagger:meta
+
 package route
 
 import (
@@ -52,10 +37,12 @@ func Setup() *gin.Engine {
 
 	user := api.Group("/user")
 
-	user.GET("/:sign-in", userController.SignIn)
+	user.POST("/login", userController.LogIn)
 	user.POST("/register", userController.Register)
-	//user.POST("/update/:post_id", postController.UpdatePost)
-	// post.GET("/list", postController.AllPost)
+	user.POST("/update/:id", userController.UpdateProfile)
+	user.GET("/view/:id", userController.ViewProfile)
+
+
 	return r
 }
 

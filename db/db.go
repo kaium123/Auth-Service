@@ -44,5 +44,16 @@ func InitDB() *sql.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS websites (
+			id SERIAL PRIMARY KEY,
+			url TEXT ,
+			user_id INTEGER
+		)
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return db
 }

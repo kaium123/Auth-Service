@@ -53,7 +53,7 @@ var serverCmd = &cobra.Command{
 		//shutdown gin
 		serverCloseContext, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		fmt.Println("getting ready for pettycash server shutdown")
+		fmt.Println("getting ready for auth server shutdown")
 		if err := server.Shutdown(serverCloseContext); err != nil {
 			log.Fatal("Server Shutdown err:", err)
 		}

@@ -6,18 +6,19 @@ type Attachment struct {
 }
 
 type User struct {
-	Email      string  `json:"email" gorm:"unique"`
-	Password   *string `json:"password,omitempty"`
-	Name       string  `json:"name"`
-	UserName   string  `json:"user_name" gorm:"index"`
-	Phone      *string `json:"phone"`
-	Website    *string `json:"website"`
-	Bio        *string `json:"bio"`
-	Gender     *string `json:"gender"`
-	ProfilePic *string `json:"profile_pic"`
+	ID         int      `json:"id"`
+	Email      string   `json:"email" `
+	Password   string   `json:"password,omitempty"`
+	Name       string   `json:"name"`
+	UserName   string   `json:"user_name" `
+	Phone      string   `json:"phone"`
+	Websites   []string `json:"websites"`
+	Bio        string   `json:"bio"`
+	Gender     string   `json:"gender"`
+	ProfilePic string   `json:"profile_pic"`
 }
 
 type SignInData struct {
-	Email    string  `json:"email" gorm:"unique"`
-	Password *string `json:"password,omitempty"`
+	Email    string `json:"email"`
+	Password string `json:"password,omitempty"`
 }

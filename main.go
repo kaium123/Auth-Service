@@ -33,19 +33,11 @@ func readConfig() {
 		}
 	}
 
-	// Override config parameters from environment variables if specified
 	err = viper.Unmarshal(&config.Config)
 	for _, key := range viper.AllKeys() {
 		viper.BindEnv(key)
 	}
 }
-
-// func Migration() {
-// 	db := db.NewGormDb()
-// 	db.AutoMigrate(postModels.Post{})
-// 	db.AutoMigrate(reactModels.React{})
-// 	db.AutoMigrate(commentModels.Comment{})
-// }
 
 func main() {
 	readConfig()
