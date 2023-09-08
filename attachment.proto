@@ -1,0 +1,57 @@
+syntax="proto3";
+
+package attachment;
+
+option go_package="pb/";
+
+
+message RequestAttachment {
+    string path = 1;
+    string name = 2;
+    string source_type=4;
+    uint64 source_id =5;
+}
+
+message ResponseAttachment {
+    string path = 1;
+    string name = 2;
+    uint64 id = 3;
+    string source_type=4;
+    uint64 source_id =5;
+}
+
+message ResponseAttachments {
+    repeated ResponseAttachment Attachments = 1;
+}
+
+message RequestAttachments {
+   repeated RequestAttachment Attachments = 1;
+}
+
+message FindOneRequestParams { 
+    int64 id = 1;
+}
+
+message FindAllRequestParams { 
+    int64 source_id = 2;
+    string source_type = 3;
+}
+
+message AttachmentIDs { 
+    repeated int64 id = 1;
+    int64 source_id = 2;
+    string source_type = 3;
+}
+
+message DeleteResponse { 
+    string response = 1;
+    int64 source_id = 2;
+    string source_type = 3;
+}
+
+service AttachmentService {
+    rpc CreateMultiple(RequestAttachments) returns (ResponseAttachments){} 
+    rpc FetchSingle(FindOneRequestParams) returns (ResponseAttachment){}
+    rpc FetchAll(FindAllRequestParams) returns (ResponseAttachments){}
+    rpc Delete(AttachmentIDs) returns (DeleteResponse){}
+}

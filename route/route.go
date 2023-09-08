@@ -1,10 +1,12 @@
-
 package route
 
 import (
 	"auth/common/logger"
 	"auth/controller"
 	"auth/db"
+	"auth/middlewares"
+	"auth/pb"
+	"auth/redis"
 	"auth/repository"
 	"auth/service"
 	"net/http"
@@ -13,6 +15,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc"
 )
 
 func Setup() *gin.Engine {
@@ -28,20 +31,29 @@ func Setup() *gin.Engine {
 	api := r.Group("/api")
 
 	db := db.InitDB()
+	conn, err := grpc.Dial(viper.GetString("ATTACHMENTURL"), grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
 
+	gRPCCLient := pb.NewAttachmentServiceClient(conn)
 	raventClient := logger.NewRavenClient()
 	logger := logger.NewLogger(raventClient)
 	repo := repository.NewUserRepository(db, logger)
-	service := service.NewUserService(repo)
+	redisConn := redis.NewRedisDb()
+	redisRepo := repository.NewRedisRepository(redisConn, logger)
+	service := service.NewUserService(gRPCCLient, repo, redisRepo)
 	userController := controller.NewUserController(service)
 
-	user := api.Group("/user")
+	auth := api.Group("/auth")
 
-	user.POST("/login", userController.LogIn)
-	user.POST("/register", userController.Register)
+	auth.POST("/login", userController.LogIn)
+	auth.POST("/register", userController.Register)
+
+	user := api.Group("/user").Use(middlewares.Auth())
 	user.POST("/update/:id", userController.UpdateProfile)
 	user.GET("/view/:id", userController.ViewProfile)
-
+	user.POST("/logout",userController.LogOut)
 
 	return r
 }

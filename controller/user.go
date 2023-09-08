@@ -7,6 +7,7 @@ import (
 	"auth/service"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,13 +29,15 @@ func (c *UserController) Register(ginContext *gin.Context) {
 		return
 	}
 
-	if err := c.service.Register(user); err != nil {
+	id, err := c.service.Register(user)
+
+	if err != nil {
 		logger.LogError("failed to query user ", err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ginContext.JSON(http.StatusCreated, gin.H{"userId": user.ID, "email": user.Email})
+	ginContext.JSON(http.StatusCreated, gin.H{"userId": id, "email": user.Email})
 
 }
 
@@ -105,5 +108,35 @@ func (c *UserController) ViewProfile(ginContext *gin.Context) {
 	}
 
 	ginContext.JSON(http.StatusCreated, gin.H{"user": profile})
+
+}
+
+func (c *UserController) LogOut(ginContext *gin.Context) {
+
+	var accessToken string
+	cookie, err := ginContext.Cookie("access_token")
+
+	authorizationHeader := ginContext.Request.Header.Get("Authorization")
+	fields := strings.Fields(authorizationHeader)
+
+	if len(fields) != 0 && fields[0] == "Bearer" {
+		accessToken = fields[1]
+	} else if err == nil {
+		accessToken = cookie
+	}
+
+	if accessToken == "" {
+		logger.LogError("failed to query estimate ", err)
+		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err = c.service.LogOut(accessToken)
+	if err != nil {
+		logger.LogError("failed to query estimate ", err)
+		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ginContext.JSON(http.StatusCreated, gin.H{"msg": "successfully log out"})
 
 }
