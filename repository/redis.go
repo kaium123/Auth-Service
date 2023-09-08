@@ -17,6 +17,7 @@ type RedisRepositoryInterface interface {
 	SetExpire(ctx context.Context, key string, expireTime time.Duration) error
 	Exists(ctx context.Context, key string, field string) bool
 	SetValue(ctx context.Context, key string, value string, expiration time.Duration) error
+	Get(ctx context.Context, key string) (string, error)
 }
 
 type RedisRepository struct {
@@ -26,6 +27,16 @@ type RedisRepository struct {
 
 func NewRedisRepository(redisClient *redis.Client, logger logger.LoggerInterface) RedisRepositoryInterface {
 	return &RedisRepository{redisClient, logger}
+}
+
+func (r RedisRepository) Get(ctx context.Context, key string) (string, error) {
+	data, err := r.RedisClient.Get(key).Result()
+	if err != nil {
+
+		return "", err
+	}
+
+	return data, nil
 }
 
 func (r RedisRepository) SetValue(ctx context.Context, key string, value string, expiration time.Duration) error {

@@ -24,7 +24,7 @@ func NewUserController(service service.UserServiceInterface) *UserController {
 func (c *UserController) Register(ginContext *gin.Context) {
 	var user models.User
 	if err := ginContext.Bind(&user); err != nil {
-		logger.LogError("failed to query estimate ", err)
+		logger.LogError( err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -32,7 +32,7 @@ func (c *UserController) Register(ginContext *gin.Context) {
 	id, err := c.service.Register(user)
 
 	if err != nil {
-		logger.LogError("failed to query user ", err)
+		logger.LogError(err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -44,7 +44,7 @@ func (c *UserController) Register(ginContext *gin.Context) {
 func (c *UserController) LogIn(ginContext *gin.Context) {
 	signInInfo := &models.SignInData{}
 	if err := ginContext.Bind(&signInInfo); err != nil {
-		logger.LogError("failed to query estimate ", err)
+		logger.LogError(err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -53,7 +53,7 @@ func (c *UserController) LogIn(ginContext *gin.Context) {
 	resp, err := c.service.LogIn(*signInInfo)
 
 	if err != nil {
-		logger.LogError("failed to query estimate ", err)
+		logger.LogError( err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -65,7 +65,7 @@ func (c *UserController) LogIn(ginContext *gin.Context) {
 func (c *UserController) UpdateProfile(ginContext *gin.Context) {
 	var user models.User
 	if err := ginContext.Bind(&user); err != nil {
-		logger.LogError("failed to query estimate ", err)
+		logger.LogError( err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -81,12 +81,12 @@ func (c *UserController) UpdateProfile(ginContext *gin.Context) {
 	user.ID = userID
 	err = c.service.UpdateProfile(&user)
 	if err != nil {
-		logger.LogError("failed to query estimate ", err)
+		logger.LogError( err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	//ginContext.JSON(http.StatusCreated, gin.H{"user": resp})
+	ginContext.JSON(http.StatusCreated, gin.H{"user": user})
 
 }
 
@@ -126,13 +126,13 @@ func (c *UserController) LogOut(ginContext *gin.Context) {
 	}
 
 	if accessToken == "" {
-		logger.LogError("failed to query estimate ", err)
+		logger.LogError( err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	err = c.service.LogOut(accessToken)
 	if err != nil {
-		logger.LogError("failed to query estimate ", err)
+		logger.LogError( err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

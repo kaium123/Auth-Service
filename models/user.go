@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -42,9 +44,16 @@ func (u *User) Validate() error {
 			v.Length(0, 1000).Error("length must be 0 tot 1000"),
 			is.EmailFormat.Error("invalid email"),
 		),
+
 		v.Field(&u.Name,
-			v.Length(0, 1000).Error("length must be 0 tot 1000"),
+			v.By(func(value interface{}) error {
+				if len(u.Name)>1000 {
+					return errors.New("length must be 0 tot 1000")
+				}
+				return nil
+			}),
 		),
+
 		v.Field(&u.UserName,
 			v.Length(0, 1000).Error("length must be 0 tot 1000"),
 		),

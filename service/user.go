@@ -56,6 +56,7 @@ func (service *UserService) LogIn(signInInfo models.SignInData) (*models.JWTToke
 
 	err = utils.ComparePassword(respUser.Password, signInInfo.Password)
 	if err != nil {
+		logger.LogError(err)
 		return nil, err
 	}
 
@@ -90,6 +91,7 @@ func (service *UserService) UpdateProfile(user *models.User) error {
 	// if err != nil {
 	// 	return err
 	// }
+	//service.gRPCClient.Delete(context.Background(),)
 	requestAttachments := &pb.RequestAttachments{}
 	service.repository.UpdateProfile(user)
 	tmpAttachment := pb.RequestAttachment{Name: user.ProfilePicName, Path: user.ProfilePicPath, SourceType: "user", SourceId: uint64(user.ID)}
@@ -119,14 +121,15 @@ func (service *UserService) ViewProfile(userID int) (*models.User, error) {
 	}
 
 	attachments := []models.Attachment{}
+	ln:=len(gRPCAttachments.Attachments)
 
 	for _, attattachment := range gRPCAttachments.Attachments {
 		attachment := models.Attachment{Name: attattachment.Name, Path: attattachment.Path}
 		attachments = append(attachments, attachment)
 	}
 	user, err := service.repository.FindByID(userID)
-	user.ProfilePicName = attachments[0].Name
-	user.ProfilePicPath = attachments[0].Path
+	user.ProfilePicName = attachments[ln-1].Name
+	user.ProfilePicPath = attachments[ln-1].Path
 	return user, nil
 }
 

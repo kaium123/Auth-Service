@@ -1,8 +1,13 @@
 package middlewares
 
 import (
+	"auth/common/logger"
 	"auth/common/utils"
 	"auth/config"
+	"auth/redis"
+	"auth/repository"
+	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -31,6 +36,19 @@ func Auth() gin.HandlerFunc {
 		sub, err := utils.ValidateToken(accessToken, config.Config.AccessTokenPublicKey)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": err.Error()})
+			return
+		}
+
+		raventClient := logger.NewRavenClient()
+		logger := logger.NewLogger(raventClient)
+		redisConn := redis.NewRedisDb()
+		redisRepo := repository.NewRedisRepository(redisConn, logger)
+		data, err := redisRepo.Get(context.Background(), "access_token:"+accessToken)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if data == "" {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "unauthorized user"})
 			return
 		}
 
