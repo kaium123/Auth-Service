@@ -4,9 +4,8 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/spf13/viper"
 	_ "github.com/lib/pq" // Import the PostgreSQL driver
-
+	"github.com/spf13/viper"
 )
 
 var db *sql.DB
@@ -52,6 +51,32 @@ func InitDB() *sql.DB {
 			user_id INTEGER
 		)
 	`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS sent_requests (
+			id SERIAL PRIMARY KEY,
+			"from" INTEGER,
+			"to" INTEGER
+		)
+	`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS friends (
+			id SERIAL PRIMARY KEY,
+			"from" INTEGER,
+			"to" INTEGER
+		)
+	`)
+
+
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -41,13 +41,13 @@ type JWTTokenResponse struct {
 func (u *User) Validate() error {
 	return v.ValidateStruct(u,
 		v.Field(&u.Email,
-			v.Length(0, 1000).Error("length must be 0 tot 1000"),
+			v.Length(0, 20).Error("length must be 0 tot 1000"),
 			is.EmailFormat.Error("invalid email"),
 		),
 
 		v.Field(&u.Name,
 			v.By(func(value interface{}) error {
-				if len(u.Name)>1000 {
+				if len(u.Name) > 20 {
 					return errors.New("length must be 0 tot 1000")
 				}
 				return nil
@@ -55,7 +55,16 @@ func (u *User) Validate() error {
 		),
 
 		v.Field(&u.UserName,
-			v.Length(0, 1000).Error("length must be 0 tot 1000"),
+			v.Length(0, 20).Error("length must be 0 tot 1000"),
+		),
+	)
+}
+
+func (u *SignInData) Validate() error {
+	return v.ValidateStruct(u,
+		v.Field(&u.Email,
+			v.Length(0, 20).Error("length must be 0 tot 1000"),
+			is.EmailFormat.Error("invalid email"),
 		),
 	)
 }

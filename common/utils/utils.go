@@ -38,7 +38,6 @@ func CreateToken(ttl time.Duration, payload interface{}, privateKey string) (str
 		logger.LogError(err)
 		return "", fmt.Errorf("could not decode key: %w", err)
 	}
-	logger.LogError(decodedPrivateKey)
 	key, err := jwt.ParseRSAPrivateKeyFromPEM(decodedPrivateKey)
 
 	if err != nil {

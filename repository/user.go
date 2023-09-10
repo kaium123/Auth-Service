@@ -4,6 +4,9 @@ import (
 	"auth/common/logger"
 	"auth/models"
 	"database/sql"
+	"errors"
+
+	"github.com/lib/pq"
 )
 
 type UserRepositoryInterface interface {
@@ -13,6 +16,12 @@ type UserRepositoryInterface interface {
 	UpdateProfile(user *models.User) error
 	UpdateWebsites(urls []string, userID int) error
 	FindByID(id int) (*models.User, error)
+	RequestSent(userID int, requestedID int) error
+	RequestAccept(userID int, requestedID int) error
+	ManageConnection(userID int, friendID int) error
+	ViewFriends(userID int) ([]*models.User, error)
+	IsAlreadyRequestSent(userID int, requestedID int) error
+	IsAlreadyRequestAccepter(userID int, requestedID int) error
 }
 
 type UserRepository struct {
@@ -84,6 +93,9 @@ func (r *UserRepository) FindByID(userID int) (*models.User, error) {
 		SELECT id, email, password, name, COALESCE(user_name,''), COALESCE(phone,''), COALESCE(bio,''), COALESCE(gender,'')
 		FROM users
 		WHERE id = $1`, userID).Scan(&user.ID, &user.Email, &user.Password, &user.Name, &user.UserName, &user.Phone, &user.Bio, &user.Gender)
+	if err != nil && err.Error() == "sql: no rows in result set" {
+		return nil, errors.New("user not found")
+	}
 	if err != nil {
 		logger.LogError(err.Error())
 		return nil, err
@@ -92,9 +104,9 @@ func (r *UserRepository) FindByID(userID int) (*models.User, error) {
 	var urls []string
 
 	rows, err := r.Db.Query(`
-    SELECT COALESCE(url,'')
-    FROM websites
-    WHERE user_id = $1`, userID)
+    	SELECT COALESCE(url,'')
+    	FROM websites
+    	WHERE user_id = $1`, userID)
 	if err != nil {
 		logger.LogError(err.Error())
 		return nil, err
@@ -119,4 +131,134 @@ func (r *UserRepository) FindByID(userID int) (*models.User, error) {
 	logger.LogError(urls)
 
 	return &user, nil
+}
+
+func (r *UserRepository) RequestSent(userID int, requestedID int) error {
+	logger.LogError(requestedID, " ", userID)
+	_, err := r.Db.Exec("INSERT INTO sent_requests (\"from\", \"to\") VALUES ($1, $2)", userID, requestedID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserRepository) RequestAccept(userID int, requestedID int) error {
+	_, err := r.Db.Exec("INSERT INTO friends (\"from\", \"to\") VALUES ($1, $2)", requestedID, userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = r.Db.Exec("DELETE FROM sent_requests WHERE \"from\" = $1 AND \"to\" = $2", requestedID, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepository) ManageConnection(userID int, friendID int) error {
+	_, err := r.Db.Exec("DELETE FROM friends WHERE (\"from\" = $1 AND \"to\" = $2) OR (\"from\" = $3 AND \"to\" = $4)", friendID, userID, userID, friendID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (r *UserRepository) ViewFriends(userID int) ([]*models.User, error) {
+	friendIDs := []int{}
+	rows, err := r.Db.Query(`
+        SELECT "from"
+        FROM friends
+        WHERE "to" = $1`, userID)
+	if err != nil {
+		logger.LogError(err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var friendID int
+		if err := rows.Scan(&friendID); err != nil {
+			logger.LogError(err.Error())
+			return nil, err
+		}
+		friendIDs = append(friendIDs, friendID)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.LogError(err.Error())
+		return nil, err
+	}
+
+	if len(friendIDs) == 0 {
+		return []*models.User{}, nil
+	}
+
+	query := `
+        SELECT id, COALESCE(name,''), COALESCE(user_name,''), COALESCE(phone,''), COALESCE(bio,''), COALESCE(gender,'')
+        FROM users
+        WHERE id = ANY($1);`
+
+	rows, err = r.Db.Query(query, pq.Array(friendIDs))
+	if err != nil {
+		logger.LogError(err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := []*models.User{}
+
+	for rows.Next() {
+		var user models.User
+		if err := rows.Scan(&user.ID, &user.Name, &user.UserName, &user.Phone, &user.Bio, &user.Gender); err != nil {
+			logger.LogError(err.Error())
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.LogError(err.Error())
+		return nil, err
+	}
+
+	logger.LogError(users)
+
+	return users, nil
+}
+
+func (r *UserRepository) IsAlreadyRequestSent(userID int, requestedID int) error {
+
+	id := 0
+	err := r.Db.QueryRow(`
+		SELECT id
+		FROM sent_requests
+		WHERE "to" = $1 and "from" = $2`, userID, requestedID).Scan(&id)
+
+	if err != nil {
+		logger.LogError(err.Error())
+		if err == sql.ErrNoRows {
+			return nil
+		}
+		return err
+	}
+
+	return errors.New("exists")
+}
+
+func (r *UserRepository) IsAlreadyRequestAccepter(userID int, requestedID int) error {
+
+	id := 0
+	err := r.Db.QueryRow(`
+		SELECT id
+		FROM friends
+		WHERE ("from" = $1 and "to" = $2) OR ("from" = $3 and "to" = $4)`, requestedID, userID,userID,requestedID).Scan(&id)
+	if err != nil {
+		logger.LogError(err.Error())
+		if err.Error() == "sql: no rows in result set" {
+			return nil
+		}
+		return err
+	}
+
+	return errors.New("exists")
 }

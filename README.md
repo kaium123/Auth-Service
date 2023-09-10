@@ -2,6 +2,11 @@
 
 # Social-Media
 
-protoc --go_out=. --plugin=protoc-gen-go=/home/kaium/go/bin/protoc-gen-go attachment.proto
+step 1 : docker compose up -d
+step 2 : go run main.go server
 
-protoc --go_out=. --plugin=protoc-gen-go=/home/kaium/go/bin/protoc-gen-go-grpc attachment.proto
+please make sure attachment service is up
+
+#protoc --go_out=. --plugin=protoc-gen-go=/home/kaium/go/bin/protoc-gen-go attachment.proto
+
+#protoc --go_out=. --plugin=protoc-gen-go=/home/kaium/go/bin/protoc-gen-go-grpc attachment.proto

@@ -51,9 +51,14 @@ func Setup() *gin.Engine {
 	auth.POST("/register", userController.Register)
 
 	user := api.Group("/user").Use(middlewares.Auth())
-	user.POST("/update/:id", userController.UpdateProfile)
+	user.POST("/update", userController.UpdateProfile)
 	user.GET("/view/:id", userController.ViewProfile)
-	user.POST("/logout",userController.LogOut)
+	user.GET("/my-profile", userController.MyProfile)
+	user.POST("/logout", userController.LogOut)
+	user.POST("/sent-request/:id", userController.RequestSent)
+	user.POST("/accept-request/:id", userController.RequestAccept)
+	user.POST("/manage-friend/:id", userController.ManageConnection)
+	user.GET("/view-friends", userController.ViewFriends)
 
 	return r
 }
