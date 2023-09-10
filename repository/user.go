@@ -232,7 +232,9 @@ func (r *UserRepository) IsAlreadyRequestSent(userID int, requestedID int) error
 	err := r.Db.QueryRow(`
 		SELECT id
 		FROM sent_requests
-		WHERE "to" = $1 and "from" = $2`, userID, requestedID).Scan(&id)
+		WHERE "to" = $1 and "from" = $2`, requestedID, userID).Scan(&id)
+
+	logger.LogInfo(id)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -251,7 +253,7 @@ func (r *UserRepository) IsAlreadyRequestAccepter(userID int, requestedID int) e
 	err := r.Db.QueryRow(`
 		SELECT id
 		FROM friends
-		WHERE ("from" = $1 and "to" = $2) OR ("from" = $3 and "to" = $4)`, requestedID, userID,userID,requestedID).Scan(&id)
+		WHERE ("from" = $1 and "to" = $2) OR ("from" = $3 and "to" = $4)`, requestedID, userID, userID, requestedID).Scan(&id)
 	if err != nil {
 		logger.LogError(err.Error())
 		if err.Error() == "sql: no rows in result set" {

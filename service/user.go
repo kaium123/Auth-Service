@@ -102,6 +102,8 @@ func (service *UserService) LogIn(signInInfo models.SignInData) (*models.JWTToke
 }
 
 func (service *UserService) UpdateProfile(user *models.User) error {
+	field := strconv.Itoa(user.ID)
+
 	err := user.Validate()
 	if err != nil {
 		return err
@@ -119,6 +121,19 @@ func (service *UserService) UpdateProfile(user *models.User) error {
 	err = service.repository.UpdateProfile(user)
 	if err != nil {
 		return err
+	}
+
+	value := map[string]interface{}{}
+	byteData, err := json.Marshal(user)
+	if err != nil {
+		logger.LogError(err)
+		return err
+	}
+
+	value[field] = byteData
+	err = service.redisRepo.Set(context.Background(), "user", value)
+	if err != nil {
+		logger.LogError(err)
 	}
 
 	tmpAttachment := pb.RequestAttachment{Name: user.ProfilePicName, Path: user.ProfilePicPath, SourceType: "user", SourceId: uint64(user.ID)}
@@ -154,6 +169,24 @@ func (service *UserService) ViewProfile(userID int) (*models.User, error) {
 		if err != nil {
 			logger.LogError(err)
 			return nil, err
+		}
+		params := &pb.FindAllRequestParams{SourceId: int64(userID), SourceType: "user"}
+		gRPCAttachments, err := service.gRPCClient.FetchAll(context.Background(), params)
+		if err != nil {
+			return nil, err
+		}
+
+		attachments := []models.Attachment{}
+
+		ln := len(gRPCAttachments.Attachments)
+		if ln > 0 {
+			for _, attattachment := range gRPCAttachments.Attachments {
+				attachment := models.Attachment{Name: attattachment.Name, Path: attattachment.Path}
+				attachments = append(attachments, attachment)
+			}
+
+			user.ProfilePicName = attachments[ln-1].Name
+			user.ProfilePicPath = attachments[ln-1].Path
 		}
 
 		return &user, nil
@@ -245,7 +278,7 @@ func (r *UserService) RequestAccept(userID int, requestedID int) error {
 
 	}
 
-	err = r.repository.IsAlreadyRequestSent(userID, requestedID)
+	err = r.repository.IsAlreadyRequestSent(requestedID, userID)
 	if err == nil {
 		return errors.New("no friend request")
 	}
