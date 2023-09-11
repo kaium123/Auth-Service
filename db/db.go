@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/lib/pq" // Import the PostgreSQL driver
@@ -11,8 +12,10 @@ import (
 var db *sql.DB
 
 func InitDB() *sql.DB {
+	fmt.Println("fdgdffio")
 	// Open a PostgreSQL database connection (replace with your own connection string)
 	dbUrl := viper.GetString("DB_URL")
+	fmt.Println(dbUrl, " ","sdfsdf")
 	var err error
 	db, err = sql.Open("postgres", dbUrl)
 	if err != nil {
@@ -75,7 +78,6 @@ func InitDB() *sql.DB {
 			"to" INTEGER
 		)
 	`)
-
 
 	if err != nil {
 		log.Fatal(err)

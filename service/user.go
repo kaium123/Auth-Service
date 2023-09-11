@@ -285,7 +285,7 @@ func (r *UserService) RequestAccept(userID int, requestedID int) error {
 
 	err = r.repository.IsAlreadyRequestAccepter(userID, requestedID)
 	if err != nil {
-		return errors.New("no friend request")
+		return errors.New("already accepted")
 	}
 	return r.repository.RequestAccept(userID, requestedID)
 }

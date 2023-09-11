@@ -16,15 +16,29 @@ services:
     restart: unless-stopped
 
   social_media_redis:
-      container_name: social_media_redis
-      image: 'redis:7-alpine'
-      environment:
-        - ALLOW_EMPTY_PASSWORD=yes
-        - REDIS_PORT_NUMBER=6379
-      networks:
-        - social_media_network
-      ports:
-        - '63792:6379'
+    container_name: social_media_redis
+    image: 'redis:7-alpine'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PORT_NUMBER=6379
+    networks:
+      - social_media_network
+    ports:
+      - '63792:6379'
+  auth:  # New service
+    container_name: auth
+    build:
+      context: .
+    ports:
+      - "8089:8089"
+    networks:
+      - social_media_network
+    depends_on:
+      - user_db
+      - social_media_redis
+    restart: unless-stopped
+    env_file:
+      - base.env
 
 networks:
   social_media_network:

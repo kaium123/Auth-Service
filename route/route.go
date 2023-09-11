@@ -9,6 +9,7 @@ import (
 	"auth/redis"
 	"auth/repository"
 	"auth/service"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -29,6 +30,7 @@ func Setup() *gin.Engine {
 	})
 
 	api := r.Group("/api")
+	fmt.Println("lkdjfdskfweiourwqio")
 
 	db := db.InitDB()
 	conn, err := grpc.Dial(viper.GetString("ATTACHMENTURL"), grpc.WithInsecure())

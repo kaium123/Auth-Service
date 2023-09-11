@@ -1,16 +1,24 @@
 package redis
 
 import (
+	"auth/common/logger"
+
 	"github.com/go-redis/redis"
 	"github.com/spf13/viper"
 )
 
-// var server = "invoice_redis:6379"
-// var password = "invoice_1234"
 func NewRedisDb() *redis.Client {
-	return redis.NewClient(&redis.Options{
-		Addr:     viper.GetString("REDIS_HOST") + ":" + viper.GetString("REDIS_PORT"),
-		Password: viper.GetString("REDIS_PASSWORD"), // no password set
-		DB:       viper.GetInt("REDIS_DB"),          // use default DB
-	})
+    redisClient := redis.NewClient(&redis.Options{
+        Addr:     "social_media_redis:6379", // Use the service name directly
+        Password: viper.GetString("REDIS_PASSWORD"), // no password set
+        DB:       viper.GetInt("REDIS_DB"),          // use default DB
+    })
+    if s, err := redisClient.Ping().Result(); err != nil {
+        logger.LogError("Error in petty-cash redis, ", err)
+    } else {
+        logger.LogInfo(s)
+    }
+
+    return redisClient
 }
+

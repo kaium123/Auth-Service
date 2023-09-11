@@ -13,7 +13,7 @@ import (
 func readConfig() {
 	var err error
 
-	viper.SetConfigFile(".env")
+	viper.SetConfigFile("base.env")
 	viper.SetConfigType("props")
 	err = viper.ReadInConfig()
 	if err != nil {
@@ -21,10 +21,10 @@ func readConfig() {
 		return
 	}
 
-	if _, err := os.Stat(".env"); os.IsNotExist(err) {
-		fmt.Println("WARNING: file .env not found")
+	if _, err := os.Stat("base.env"); os.IsNotExist(err) {
+		fmt.Println("WARNING: file base.env not found")
 	} else {
-		viper.SetConfigFile(".env")
+		viper.SetConfigFile("base.env")
 		viper.SetConfigType("props")
 		err = viper.MergeInConfig()
 		if err != nil {
@@ -41,6 +41,7 @@ func readConfig() {
 
 func main() {
 	readConfig()
+	fmt.Println("wieuyriweryuiyewuiryweuir")
 	raventClient := logger.NewRavenClient()
 	logger.NewLogger(raventClient)
 	command.Execute()
