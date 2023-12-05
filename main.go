@@ -34,14 +34,19 @@ func readConfig() {
 	}
 
 	err = viper.Unmarshal(&config.Config)
-	for _, key := range viper.AllKeys() {
+	for v, key := range viper.AllKeys() {
+		fmt.Println(key, " ", v)
+		viper.BindEnv(key)
+	}
+
+	for v, key := range viper.AllKeys() {
+		fmt.Println(key, " ", v)
 		viper.BindEnv(key)
 	}
 }
 
 func main() {
 	readConfig()
-	fmt.Println("wieuyriweryuiyewuiryweuir")
 	raventClient := logger.NewRavenClient()
 	logger.NewLogger(raventClient)
 	command.Execute()

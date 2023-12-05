@@ -1,16 +1,16 @@
 version: '3.5'
 
 services:
-  user_db:
-    container_name: user_db
-    image: postgres
+  sm-db:
+    container_name: sm-db
+    image: kaium123/sm-db
     ports:
       - "54322:5432"
     volumes:
-      - user_db:/var/lib/postgresql
+      - sm-db:/var/lib/postgresql
     environment:
-      POSTGRES_DB: user
-      POSTGRES_PASSWORD: user_54321
+      POSTGRES_DB: testdb
+      POSTGRES_PASSWORD: 12345678
     networks:
       - social_media_network
     restart: unless-stopped
@@ -27,14 +27,13 @@ services:
       - '63792:6379'
   auth:  # New service
     container_name: auth
-    build:
-      context: .
+    image: kaium123/auth:2
     ports:
       - "8089:8089"
     networks:
       - social_media_network
     depends_on:
-      - user_db
+      - sm-db
       - social_media_redis
     restart: unless-stopped
     env_file:
@@ -45,6 +44,6 @@ networks:
     driver: bridge
 
 volumes:
-  user_db: {}
+  sm-db: {}
   # minio_storage: {}
 

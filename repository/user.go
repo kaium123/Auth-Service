@@ -35,7 +35,7 @@ func NewUserRepository(Db *sql.DB, logger logger.LoggerInterface) UserRepository
 
 func (r *UserRepository) Register(user models.User) (int, error) {
 	var lastInsertedID int
-	query := "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id"
+	query := "INSERT INTO sm_users (name, email, password) VALUES ($1, $2, $3) RETURNING id"
 
 	err := r.Db.QueryRow(query, user.Name, user.Email, user.Password).Scan(&lastInsertedID)
 	if err != nil {
@@ -55,7 +55,7 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 	var user models.User
 	err := r.Db.QueryRow(`
 		SELECT id, email, password, name, COALESCE(user_name,''), COALESCE(phone,''), COALESCE(bio,''), COALESCE(gender,'')
-		FROM users
+		FROM sm_users
 		WHERE email = $1`, email).Scan(&user.ID, &user.Email, &user.Password, &user.Name, &user.UserName, &user.Phone, &user.Bio, &user.Gender)
 	if err != nil {
 		logger.LogError(err.Error())
@@ -70,7 +70,7 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 }
 
 func (r *UserRepository) UpdateProfile(user *models.User) error {
-	_, err := r.Db.Exec("UPDATE users SET name = $1, email = $2, password = $3, user_name = $4, phone = $5, bio = $6, gender = $7 WHERE id = $8", user.Name, user.Email, user.Password, user.UserName, user.Phone, user.Bio, user.Gender, user.ID)
+	_, err := r.Db.Exec("UPDATE sm_users SET name = $1, email = $2, password = $3, user_name = $4, phone = $5, bio = $6, gender = $7 WHERE id = $8", user.Name, user.Email, user.Password, user.UserName, user.Phone, user.Bio, user.Gender, user.ID)
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (r *UserRepository) FindByID(userID int) (*models.User, error) {
 	var user models.User
 	err := r.Db.QueryRow(`
 		SELECT id, email, password, name, COALESCE(user_name,''), COALESCE(phone,''), COALESCE(bio,''), COALESCE(gender,'')
-		FROM users
+		FROM sm_users
 		WHERE id = $1`, userID).Scan(&user.ID, &user.Email, &user.Password, &user.Name, &user.UserName, &user.Phone, &user.Bio, &user.Gender)
 	if err != nil && err.Error() == "sql: no rows in result set" {
 		return nil, errors.New("user not found")
@@ -195,7 +195,7 @@ func (r *UserRepository) ViewFriends(userID int) ([]*models.User, error) {
 
 	query := `
         SELECT id, COALESCE(name,''), COALESCE(user_name,''), COALESCE(phone,''), COALESCE(bio,''), COALESCE(gender,'')
-        FROM users
+        FROM sm_users
         WHERE id = ANY($1);`
 
 	rows, err = r.Db.Query(query, pq.Array(friendIDs))

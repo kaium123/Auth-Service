@@ -11,16 +11,32 @@ import (
 
 var db *sql.DB
 
+// const (
+// 	HOST     = "localhost"
+// 	PORT     = 54322
+// 	USER     = "sm_user3"
+// 	PASSWORD = "12345678"
+// 	DBNAME   = "testdb"
+// )
+
 func InitDB() *sql.DB {
-	fmt.Println("fdgdffio")
-	// Open a PostgreSQL database connection (replace with your own connection string)
-	dbUrl := viper.GetString("DB_URL")
-	fmt.Println(dbUrl, " ","sdfsdf")
-	var err error
-	db, err = sql.Open("postgres", dbUrl)
+
+	HOST := viper.GetString("HOST")
+	PORT := viper.GetString("PORT")
+	USER := viper.GetString("DB_USER")
+	fmt.Println(USER)
+	PASSWORD := viper.GetString("PASSWORD")
+	DBNAME := viper.GetString("DBNAME")
+	connString := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		HOST, PORT, USER, PASSWORD, DBNAME,
+	)
+
+	db, err := sql.Open("postgres", connString)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(connString)
 
 	// Test the database connection
 	err = db.Ping()
@@ -28,9 +44,11 @@ func InitDB() *sql.DB {
 		log.Fatal(err)
 	}
 
+	fmt.Println("here")
+
 	// Create the user table if it doesn't exist
 	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS users (
+		CREATE TABLE IF NOT EXISTS sm_users (
 			id SERIAL PRIMARY KEY,
 			email TEXT UNIQUE,
 			password TEXT,
@@ -82,5 +100,7 @@ func InitDB() *sql.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("here")
+
 	return db
 }
