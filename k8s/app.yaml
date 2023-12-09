@@ -1,0 +1,24 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: api
+  template:
+    metadata:
+      labels:
+        component: api
+    spec:
+      containers:
+        - name: api
+          image: kaium123/auth:2
+          ports:
+            - containerPort: 8089
+          # not putting environment variables directly
+          envFrom:
+            - configMapRef:
+                name: api-config-map

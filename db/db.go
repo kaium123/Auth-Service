@@ -38,12 +38,6 @@ func InitDB() *sql.DB {
 	}
 	fmt.Println(connString)
 
-	// Test the database connection
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	fmt.Println("here")
 
 	// Create the user table if it doesn't exist

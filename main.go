@@ -34,15 +34,10 @@ func readConfig() {
 	}
 
 	err = viper.Unmarshal(&config.Config)
-	for v, key := range viper.AllKeys() {
-		fmt.Println(key, " ", v)
+	for _, key := range viper.AllKeys() {
 		viper.BindEnv(key)
 	}
 
-	for v, key := range viper.AllKeys() {
-		fmt.Println(key, " ", v)
-		viper.BindEnv(key)
-	}
 }
 
 func main() {
