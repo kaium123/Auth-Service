@@ -33,6 +33,7 @@ func InitDB() *sql.DB {
 	)
 
 	db, err := sql.Open("postgres", connString)
+	
 	if err != nil {
 		log.Fatal(err)
 	}
